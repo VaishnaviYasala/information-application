@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Information Application</title>
+    <style>
+        body { font-family: Arial; margin: 30px; }
+        input, button { padding: 8px; margin: 5px 0; }
+        table { border-collapse: collapse; width: 50%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Information Application</h1>
+    
+    <form id="infoForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <button type="submit">Add</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody id="infoTableBody">
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById('infoForm');
+        const tableBody = document.getElementById('infoTableBody');
+
+        // Fetch existing entries
+        async function fetchInfo() {
+            const res = await fetch('/api/info');
+            const data = await res.json();
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                const row = `<tr>
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.email}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Add new entry
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            await fetch('/api/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+
+            form.reset();
+            fetchInfo();
+        });
+
+        // Initial fetch
+        fetchInfo();
+    </script>
+</body>
+</html>
