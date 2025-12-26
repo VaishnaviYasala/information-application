@@ -1,0 +1,28 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches:
+      - main   # or your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fly Deploy
+        uses: superfly/flyctl-actions@1.2
+        with:
+          args: deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

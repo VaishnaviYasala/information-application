@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial; margin: 30px; }
         input, button { padding: 8px; margin: 5px 0; }
-        table { border-collapse: collapse; width: 50%; margin-top: 20px; }
+        table { border-collapse: collapse; width: 60%; margin-top: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     </style>
 </head>
@@ -17,6 +17,7 @@
     <form id="infoForm">
         <input type="text" id="name" placeholder="Name" required>
         <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
         <button type="submit">Add</button>
     </form>
 
@@ -26,6 +27,7 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Phone</th>
             </tr>
         </thead>
         <tbody id="infoTableBody">
@@ -46,6 +48,7 @@
                     <td>${item.id}</td>
                     <td>${item.name}</td>
                     <td>${item.email}</td>
+                    <td>${item.phone || ''}</td>
                 </tr>`;
                 tableBody.innerHTML += row;
             });
@@ -56,11 +59,12 @@
             e.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
 
             await fetch('/api/info', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email })
+                body: JSON.stringify({ name, email, phone })
             });
 
             form.reset();

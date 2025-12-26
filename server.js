@@ -12,12 +12,12 @@
 // app.use(cors());
 // app.use(express.static(path.join(__dirname, 'public')));
 
-// // Database setup
-// const dbPath = path.join(__dirname, 'information.db');
+// // Database setup - use Fly volume mounted at /data
+// const dbPath = path.join('/data', 'information.db');
 // const db = new sqlite3.Database(dbPath, (err) => {
 //     if (err) {
 //         console.error('Error opening database:', err.message);
-//         process.exit(1); // stop the server if DB fails
+//         process.exit(1);
 //     } else {
 //         console.log('Connected to SQLite database at', dbPath);
 //     }
@@ -38,12 +38,8 @@
 // // Routes
 // app.get('/api/info', (req, res) => {
 //     db.all('SELECT * FROM info', [], (err, rows) => {
-//         if (err) {
-//             console.error('Error fetching data:', err.message);
-//             res.status(500).json({ error: err.message });
-//         } else {
-//             res.json(rows);
-//         }
+//         if (err) res.status(500).json({ error: err.message });
+//         else res.json(rows);
 //     });
 // });
 
@@ -52,12 +48,8 @@
 //     if (!name || !email) return res.status(400).json({ error: 'Name and Email required' });
 
 //     db.run('INSERT INTO info (name, email) VALUES (?, ?)', [name, email], function(err) {
-//         if (err) {
-//             console.error('Error inserting data:', err.message);
-//             res.status(500).json({ error: err.message });
-//         } else {
-//             res.json({ id: this.lastID, name, email });
-//         }
+//         if (err) res.status(500).json({ error: err.message });
+//         else res.json({ id: this.lastID, name, email });
 //     });
 // });
 
@@ -65,7 +57,7 @@
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
-const express = require('express');
+const express = require('express'); 
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -90,12 +82,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
+// Add 'phone' column if it doesn't exist
+db.run(`ALTER TABLE info ADD COLUMN phone TEXT`, (err) => {
+    if (err) console.log('Column "phone" already exists, skipping');
+});
+
 // Create table if it doesn't exist
 db.run(`
     CREATE TABLE IF NOT EXISTS info (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
-        email TEXT
+        email TEXT,
+        phone TEXT
     )
 `, (err) => {
     if (err) console.error('Error creating table:', err.message);
@@ -111,12 +109,12 @@ app.get('/api/info', (req, res) => {
 });
 
 app.post('/api/info', (req, res) => {
-    const { name, email } = req.body;
+    const { name, email, phone } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Name and Email required' });
 
-    db.run('INSERT INTO info (name, email) VALUES (?, ?)', [name, email], function(err) {
+    db.run('INSERT INTO info (name, email, phone) VALUES (?, ?, ?)', [name, email, phone], function(err) {
         if (err) res.status(500).json({ error: err.message });
-        else res.json({ id: this.lastID, name, email });
+        else res.json({ id: this.lastID, name, email, phone });
     });
 });
 
